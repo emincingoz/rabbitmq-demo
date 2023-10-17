@@ -5,27 +5,18 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.demo.payment.service.entity.Payment;
+import com.demo.payment.service.event.publisher.PaymentEventPublisherProvider;
+import com.demo.payment.service.event.publisher.model.PaymentEvent;
 import com.demo.payment.service.service.PublisherService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
+import com.demo.rabbitmq.outbox.service.enums.EventType;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OrderPublisher implements PublisherService {
+    private final PaymentEventPublisherProvider eventPublisherProvider;
 
-    @Value("${second-property.queues.paymentCreated.exchange.name}")
-    private String exchange;
-    @Value("${second-property.queues.paymentCreated.routingKey}")
-    private String routingKey;
-
-    private final RabbitTemplate amqpTemplate;
-
-    public OrderPublisher(@Qualifier("orderConnectionRabbitTemplate") RabbitTemplate rabbitTemplate) {
-        this.amqpTemplate = rabbitTemplate;
+    public OrderPublisher(PaymentEventPublisherProvider eventPublisherProvider) {
+        this.eventPublisherProvider = eventPublisherProvider;
     }
 
     @Override
@@ -33,15 +24,8 @@ public class OrderPublisher implements PublisherService {
         Payment payment =
                 Payment.builder().id(UUID.randomUUID().toString()).orderId(UUID.randomUUID().toString()).amount(
                         BigDecimal.TEN).createdDate(LocalDateTime.now()).customerId(3L).source("asdsafs").build();
-        String message = payment.toString();
-        /*ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            message = objectMapper.writeValueAsString(payment);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }*/
-        amqpTemplate.convertAndSend(exchange, routingKey, message);
 
-        System.out.println("dgdfhgfh");
+        PaymentEvent<Payment> event = new PaymentEvent<>(payment);
+        eventPublisherProvider.createEvent(EventType.CREATE, event);
     }
 }
