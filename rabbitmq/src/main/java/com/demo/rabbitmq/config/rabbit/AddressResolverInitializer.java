@@ -1,9 +1,10 @@
-package com.demo.payment.service.config;
+package com.demo.rabbitmq.config.rabbit;
 
 import java.util.Map;
 
-import com.demo.payment.service.config.model.ConnectionSpec;
-import com.demo.payment.service.config.model.RabbitConfigData;
+import com.demo.rabbitmq.BeanFactory;
+import com.demo.rabbitmq.config.rabbit.model.ConnectionSpec;
+import com.demo.rabbitmq.config.rabbit.model.RabbitConfigData;
 import com.rabbitmq.client.AddressResolver;
 import com.rabbitmq.client.DnsRecordIpAddressResolver;
 import jakarta.annotation.PostConstruct;

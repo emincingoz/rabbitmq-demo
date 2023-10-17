@@ -1,9 +1,10 @@
-package com.demo.payment.service.config;
+package com.demo.rabbitmq.config.rabbit;
 
 import java.util.Map;
 
-import com.demo.payment.service.config.model.ConnectionSpec;
-import com.demo.payment.service.config.model.RabbitConfigData;
+import com.demo.rabbitmq.BeanFactory;
+import com.demo.rabbitmq.config.rabbit.model.ConnectionSpec;
+import com.demo.rabbitmq.config.rabbit.model.RabbitConfigData;
 import com.rabbitmq.client.AddressResolver;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-@Component("beanInitializer")
+@Component("connectionFactoryInitializer")
 @DependsOn("addressResolverInitializer")
 public class ConnectionFactoryInitializer {
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionFactoryInitializer.class);

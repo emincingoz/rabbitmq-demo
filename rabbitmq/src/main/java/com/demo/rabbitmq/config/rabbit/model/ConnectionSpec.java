@@ -1,4 +1,4 @@
-package com.demo.payment.service.config.model;
+package com.demo.rabbitmq.config.rabbit.model;
 
 import lombok.Data;
 

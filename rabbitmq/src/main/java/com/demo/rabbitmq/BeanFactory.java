@@ -1,4 +1,4 @@
-package com.demo.payment.service.config;
+package com.demo.rabbitmq;
 
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -18,3 +18,4 @@ public final class BeanFactory {
         factory.registerSingleton(beanName, initialized);
     }
 }
+

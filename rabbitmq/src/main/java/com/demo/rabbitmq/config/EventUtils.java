@@ -1,7 +1,7 @@
-package com.demo.payment.service.config;
+package com.demo.rabbitmq.config;
 
-import com.demo.payment.service.config.model.ExchangeSpec;
-import com.demo.payment.service.config.model.QueueSpec;
+import com.demo.rabbitmq.config.rabbit.model.ExchangeSpec;
+import com.demo.rabbitmq.config.rabbit.model.QueueSpec;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.AbstractExchange;
 import org.springframework.amqp.core.DirectExchange;

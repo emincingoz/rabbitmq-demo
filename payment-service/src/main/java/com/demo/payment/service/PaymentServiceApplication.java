@@ -2,27 +2,23 @@ package com.demo.payment.service;
 
 import java.util.Map;
 
-import com.demo.payment.service.config.DemoConfig;
-import com.demo.payment.service.config.SecondDemoConfig;
-import com.demo.payment.service.config.model.ConnectionSpec;
-import com.demo.payment.service.config.model.QueueSpec;
-import com.demo.payment.service.config.model.RabbitConfigData;
+import com.demo.rabbitmq.config.rabbit.model.ConnectionSpec;
+import com.demo.rabbitmq.config.rabbit.model.QueueSpec;
+import com.demo.rabbitmq.config.rabbit.model.RabbitConfigData;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.DependsOn;
 
+@DependsOn("messagePublisherConfig")
+@ComponentScan(basePackages = {"com.demo"})
 @SpringBootApplication(exclude = RabbitAutoConfiguration.class)
 public class PaymentServiceApplication implements CommandLineRunner {
-
-    private final DemoConfig demoConfig;
-    private final SecondDemoConfig secondDemoConfig;
     private final RabbitConfigData rabbitConfigData;
 
-    public PaymentServiceApplication(DemoConfig demoConfig, SecondDemoConfig secondDemoConfig,
-                                     RabbitConfigData rabbitConfigData) {
-        this.demoConfig = demoConfig;
-        this.secondDemoConfig = secondDemoConfig;
+    public PaymentServiceApplication(RabbitConfigData rabbitConfigData) {
         this.rabbitConfigData = rabbitConfigData;
     }
 
@@ -32,11 +28,6 @@ public class PaymentServiceApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Map<String, String> configs = demoConfig.getListOfMaps();
-        System.out.println(demoConfig.getListOfMaps().toString());
-
-        Map<String, Map<String , String>> secondConfigs = secondDemoConfig.getListOfMaps();
-        System.out.println(secondDemoConfig.getListOfMaps().toString());
 
         Map<String, ConnectionSpec> connections = rabbitConfigData.getConnections();
         Map<String, Map<String, QueueSpec>> queues = rabbitConfigData.getQueues();

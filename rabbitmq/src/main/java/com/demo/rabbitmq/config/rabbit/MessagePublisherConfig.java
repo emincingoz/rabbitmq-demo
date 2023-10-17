@@ -1,12 +1,14 @@
-package com.demo.payment.service.config;
+package com.demo.rabbitmq.config.rabbit;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import com.demo.payment.service.config.model.ConnectionSpec;
-import com.demo.payment.service.config.model.QueueSpec;
-import com.demo.payment.service.config.model.RabbitConfigData;
+import com.demo.rabbitmq.BeanFactory;
+import com.demo.rabbitmq.config.EventUtils;
+import com.demo.rabbitmq.config.rabbit.model.ConnectionSpec;
+import com.demo.rabbitmq.config.rabbit.model.QueueSpec;
+import com.demo.rabbitmq.config.rabbit.model.RabbitConfigData;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import jakarta.annotation.PostConstruct;
@@ -21,8 +23,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.util.CollectionUtils;
 
-@Configuration
-@DependsOn("beanInitializer")
+@Configuration("messagePublisherConfig")
+@DependsOn("connectionFactoryInitializer")
 public class MessagePublisherConfig {
     private static final Logger LOG = LoggerFactory.getLogger(MessagePublisherConfig.class);
     private final ApplicationContext context;
@@ -31,7 +33,7 @@ public class MessagePublisherConfig {
     private final RabbitConfigData rabbitConfigData;
 
     public MessagePublisherConfig(ApplicationContext context, BeanFactory beanFactory,
-                                  @Qualifier("jsonMessageConverter") MessageConverter messageConverter,
+                                  @Qualifier("messageConverter") MessageConverter messageConverter,
                                   RabbitConfigData rabbitConfigData) {
         this.context = context;
         this.beanFactory = beanFactory;
