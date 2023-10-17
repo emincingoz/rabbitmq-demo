@@ -18,7 +18,7 @@ spring:
     show-sql: true
 
 
-rabbit-config:
+#rabbit-config:
   direct-login-config:
     host: localhost
     port: 5672
@@ -78,3 +78,47 @@ second-property:
         name: x.payment-service
         durable: true
         type: direct
+
+
+
+rabbit-config:
+  connections:
+    orderConnection:
+      host: localhost
+      port: 5674
+      username: rabbitdemo
+      password: rabbitdemo
+    paymentConnection:
+      host: localhost
+      port: 5673
+      username: rabbitdemo
+      password: rabbitdemo
+
+  queues:
+    orderConnection:
+      orderCreated:
+        declare: true
+        name: q.order-service.order-created-queue
+        durable: true
+        routingKey: order.service.order.created
+        arguments:
+          x-message-ttl: 60000
+          x-max-priority: 10
+        exchange:
+          name: x.order-service
+          durable: true
+          type: direct
+    paymentConnection:
+      paymentCreated:
+        declare: true
+        name: q.payment-service.payment-created-queue
+        durable: true
+        routingKey: payment.service.payment.created
+        arguments:
+          x-message-ttl: 60000
+          x-max-priority: 10
+        exchange:
+          name: x.payment-service
+          durable: true
+          type: direct
+

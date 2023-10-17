@@ -2,36 +2,37 @@ package com.demo.payment.service.config;
 
 import java.util.Map;
 
+import com.demo.payment.service.config.model.ConnectionSpec;
+import com.demo.payment.service.config.model.RabbitConfigData;
 import com.rabbitmq.client.AddressResolver;
 import com.rabbitmq.client.DnsRecordIpAddressResolver;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component("addressResolverInitializer")
 public class AddressResolverInitializer {
+    private static final Logger LOG = LoggerFactory.getLogger(AddressResolverInitializer.class);
+    private final RabbitConfigData rabbitConfigData;
+    private final BeanFactory beanFactory;
 
-    private final DefaultListableBeanFactory factory;
-    private final SecondDemoConfig secondDemoConfig;
-
-    public AddressResolverInitializer(DefaultListableBeanFactory factory, SecondDemoConfig secondDemoConfig) {
-        this.factory = factory;
-        this.secondDemoConfig = secondDemoConfig;
+    public AddressResolverInitializer(RabbitConfigData rabbitConfigData,
+                                      BeanFactory beanFactory) {
+        this.rabbitConfigData = rabbitConfigData;
+        this.beanFactory = beanFactory;
     }
 
     @PostConstruct
     public void addressResolverInitializer() {
-        for(Map.Entry<String, Map<String, String>> e : secondDemoConfig.getListOfMaps().entrySet()) {
 
-            AddressResolver addressResolver = new DnsRecordIpAddressResolver(e.getValue().get("host"),
-                    Integer.parseInt(e.getValue().get("port")));
+        for(Map.Entry<String, ConnectionSpec> e : rabbitConfigData.getConnections().entrySet()) {
 
-            Object initialized = factory.initializeBean(addressResolver, e.getKey() + "AddressResolver");
-            factory.autowireBeanProperties(initialized, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-            factory.registerSingleton(e.getKey() + "AddressResolver", initialized);
-
-            System.out.println(e.getKey() + " -> " + e.getValue().toString());
+            String addressResolverBeanName = e.getKey() + "AddressResolver";
+            ConnectionSpec connectionSpec = e.getValue();
+            AddressResolver addressResolver = new DnsRecordIpAddressResolver(connectionSpec.getHost(), connectionSpec.getPort());
+            beanFactory.initializeBean(addressResolver, addressResolverBeanName);
+            LOG.info("AddressResolver bean initialized with bean name: {}", addressResolverBeanName);
         }
     }
 }

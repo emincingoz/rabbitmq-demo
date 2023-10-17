@@ -4,6 +4,9 @@ import java.util.Map;
 
 import com.demo.payment.service.config.DemoConfig;
 import com.demo.payment.service.config.SecondDemoConfig;
+import com.demo.payment.service.config.model.ConnectionSpec;
+import com.demo.payment.service.config.model.QueueSpec;
+import com.demo.payment.service.config.model.RabbitConfigData;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,10 +17,13 @@ public class PaymentServiceApplication implements CommandLineRunner {
 
     private final DemoConfig demoConfig;
     private final SecondDemoConfig secondDemoConfig;
+    private final RabbitConfigData rabbitConfigData;
 
-    public PaymentServiceApplication(DemoConfig demoConfig, SecondDemoConfig secondDemoConfig) {
+    public PaymentServiceApplication(DemoConfig demoConfig, SecondDemoConfig secondDemoConfig,
+                                     RabbitConfigData rabbitConfigData) {
         this.demoConfig = demoConfig;
         this.secondDemoConfig = secondDemoConfig;
+        this.rabbitConfigData = rabbitConfigData;
     }
 
     public static void main(String ... args) {
@@ -31,5 +37,10 @@ public class PaymentServiceApplication implements CommandLineRunner {
 
         Map<String, Map<String , String>> secondConfigs = secondDemoConfig.getListOfMaps();
         System.out.println(secondDemoConfig.getListOfMaps().toString());
+
+        Map<String, ConnectionSpec> connections = rabbitConfigData.getConnections();
+        Map<String, Map<String, QueueSpec>> queues = rabbitConfigData.getQueues();
+        System.out.println(rabbitConfigData.getConnections().toString());
+        System.out.println(rabbitConfigData.getQueues().toString());
     }
 }

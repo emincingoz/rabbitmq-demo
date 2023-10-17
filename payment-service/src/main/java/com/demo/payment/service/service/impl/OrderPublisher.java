@@ -23,7 +23,7 @@ public class OrderPublisher implements PublisherService {
 
     private final AmqpTemplate amqpTemplate;
 
-    public OrderPublisher(@Qualifier("paymentRabbitTemplate") AmqpTemplate amqpTemplate) {
+    public OrderPublisher(@Qualifier("orderConnectionRabbitTemplate") AmqpTemplate amqpTemplate) {
         this.amqpTemplate = amqpTemplate;
     }
 
