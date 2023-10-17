@@ -1,0 +1,57 @@
+version: "3.8"
+name: rabbitmq-demo
+services:
+  # ---------------  PostgreSQL ---------------
+  db:
+    build:
+      context: postgresql
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: rabbitdemo
+      POSTGRES_PASSWORD: rabbitdemo
+      POSTGRES_DB: rabbitdemo
+    volumes:
+      - postgre_volume:/var/lib/postgresql/data"
+
+  # ---------------  PGADMIN ---------------
+  pgAdmin:
+    image: dpage/pgadmin4:6.9
+    ports:
+      - 8081:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: rabbitdemo@rabbit.com
+      PGADMIN_DEFAULT_PASSWORD: rabbitdemo
+    restart: always
+
+  # ----------  MESSAGE BROKKER - 1 ---------
+  rabbitmq-1:
+    image: rabbitmq:3-management
+    ports:
+      - 5674:5672
+      - 15674:15672
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitdemo
+      RABBITMQ_DEFAULT_PASS: rabbitdemo
+    volumes:
+      - messageBroker_volume:/var/lib/rabbitmq-1
+
+  # ----------  MESSAGE BROKKER - 2 ---------
+  rabbitmq-2:
+    image: rabbitmq:3-management
+    ports:
+      - 5673:5672
+      - 15673:15672
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitdemo
+      RABBITMQ_DEFAULT_PASS: rabbitdemo
+    volumes:
+      - messageBroker_volume:/var/lib/rabbitmq-2
+
+volumes:
+  postgre_volume:
+  messageBroker_volume:

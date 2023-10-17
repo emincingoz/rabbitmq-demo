@@ -1,0 +1,80 @@
+server:
+  port: 8182
+
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/rabbitdemo?currentSchema=payment_service
+    username: rabbitdemo
+    password: rabbitdemo
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+
+rabbit-config:
+  direct-login-config:
+    host: localhost
+    port: 5672
+    username: rabbitdemo
+    password: rabbitdemo
+
+
+property:
+  list-of-maps:
+    -
+      host: localhost
+      port: 5672
+      username: rabbitfirst
+      password: rabbitfirstpass
+    -
+      host: localhost
+      port: 5673
+      username: rabbitsecond
+      password: rabbitsecondpass
+
+
+second-property:
+  list-of-maps:
+    order:
+      host: localhost
+      port: 5674
+      username: rabbitdemo
+      password: rabbitdemo
+    payment:
+      host: localhost
+      port: 5673
+      username: rabbitdemo
+      password: rabbitdemo
+
+  queues:
+    orderCreated:
+      declare: true
+      name: q.order-service.order-created-queue
+      durable: true
+      routingKey: order.service.order.created
+      arguments:
+        x-message-ttl: 60000
+        x-max-priority: 10
+      exchange:
+        name: x.order-service
+        durable: true
+        type: direct
+    paymentCreated:
+      declare: true
+      name: q.payment-service.payment-created-queue
+      durable: true
+      routingKey: payment.service.payment.created
+      arguments:
+        x-message-ttl: 60000
+        x-max-priority: 10
+      exchange:
+        name: x.payment-service
+        durable: true
+        type: direct
