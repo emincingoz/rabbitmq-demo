@@ -5,5 +5,5 @@ import com.demo.rabbitmq.outbox.service.model.MessageQueueInputDTO;
 
 public interface MessageQueueEventManager {
 
-    void sendEvent(MessageQueueInputDTO<? extends MessageBaseRequest> messageQueueInputDTO);
+    void sendEvent(MessageQueueInputDTO<? extends MessageBaseRequest> mqinputDTO);
 }

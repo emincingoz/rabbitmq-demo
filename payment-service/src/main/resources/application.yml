@@ -82,6 +82,9 @@ second-property:
 
 
 rabbit-config:
+  outbox:
+    table-name: PAYMENT_OUTBOX
+
   connections:
     orderConnection:
       host: localhost

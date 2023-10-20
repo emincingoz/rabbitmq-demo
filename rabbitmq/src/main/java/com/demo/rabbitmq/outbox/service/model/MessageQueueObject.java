@@ -1,5 +1,7 @@
 package com.demo.rabbitmq.outbox.service.model;
 
+import java.io.Serializable;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +11,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MessageQueueObject<T> {
+public class MessageQueueObject<T> implements Serializable {
     private String messageId;
     private T jsonObject;
 }

@@ -1,5 +1,7 @@
 package com.demo.payment.service;
 
+import static java.lang.StringTemplate.STR;
+
 import java.util.Map;
 
 import com.demo.rabbitmq.config.rabbit.model.ConnectionSpec;
@@ -33,5 +35,14 @@ public class PaymentServiceApplication implements CommandLineRunner {
         Map<String, Map<String, QueueSpec>> queues = rabbitConfigData.getQueues();
         System.out.println(rabbitConfigData.getConnections().toString());
         System.out.println(rabbitConfigData.getQueues().toString());
+
+        String sql = STR."""
+                SELECT UNIQUE_ID, VERSION, CREATED_DATE, UPDATED_DATE, STATUS, PROCESS_CODE, EVENT_CODE, HEADER, PAYLOAD
+                FROM \{rabbitConfigData.getConnections().toString()}
+                WHERE UNIQUE_ID = ?
+                FOR UPDATE WAIT 2
+                """;
+
+        System.out.println("Hello: " + sql);
     }
 }
