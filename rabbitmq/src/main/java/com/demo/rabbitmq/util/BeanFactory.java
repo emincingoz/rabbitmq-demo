@@ -1,4 +1,4 @@
-package com.demo.rabbitmq;
+package com.demo.rabbitmq.util;
 
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;

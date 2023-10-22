@@ -6,8 +6,8 @@ import com.demo.rabbitmq.outbox.mapper.OutboxMapper;
 import com.demo.rabbitmq.outbox.repository.OutboxRepository;
 import com.demo.rabbitmq.outbox.repository.entity.Outbox;
 import com.demo.rabbitmq.outbox.service.OutboxService;
-import com.demo.rabbitmq.outbox.service.enums.OutboxStatus;
-import com.demo.rabbitmq.outbox.service.model.OutboxDTO;
+import com.demo.rabbitmq.outbox.enums.OutboxStatus;
+import com.demo.rabbitmq.outbox.model.OutboxDTO;
 import org.springframework.stereotype.Service;
 
 /**

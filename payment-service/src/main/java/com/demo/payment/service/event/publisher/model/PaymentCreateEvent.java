@@ -3,7 +3,7 @@ package com.demo.payment.service.event.publisher.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.demo.rabbitmq.outbox.service.model.MessageBaseRequest;
+import com.demo.rabbitmq.publisher.model.MessageBaseRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

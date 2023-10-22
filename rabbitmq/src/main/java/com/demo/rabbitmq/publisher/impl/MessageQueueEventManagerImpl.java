@@ -1,19 +1,24 @@
-package com.demo.rabbitmq.outbox;
+package com.demo.rabbitmq.publisher.impl;
 
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.demo.rabbitmq.publisher.MessageQueueEventManager;
+import com.demo.rabbitmq.model.QueueSpec;
+import com.demo.rabbitmq.model.RabbitConfigData;
+import com.demo.rabbitmq.exception.MessageQueueException;
 import com.demo.rabbitmq.outbox.service.OutboxService;
-import com.demo.rabbitmq.outbox.service.enums.OutboxStatus;
-import com.demo.rabbitmq.outbox.service.model.MessageBaseRequest;
-import com.demo.rabbitmq.outbox.service.model.MessageQueueEventDTO;
-import com.demo.rabbitmq.outbox.service.model.MessageQueueInputDTO;
-import com.demo.rabbitmq.outbox.service.model.MessageQueueObject;
-import com.demo.rabbitmq.outbox.service.model.OutboxDTO;
+import com.demo.rabbitmq.outbox.enums.OutboxStatus;
+import com.demo.rabbitmq.publisher.model.MessageBaseRequest;
+import com.demo.rabbitmq.publisher.model.MessageQueueEventDTO;
+import com.demo.rabbitmq.publisher.model.MessageQueueInputDTO;
+import com.demo.rabbitmq.publisher.model.MessageQueueObject;
+import com.demo.rabbitmq.outbox.model.OutboxDTO;
 import com.demo.rabbitmq.util.JsonUtil;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
@@ -42,17 +47,21 @@ public class MessageQueueEventManagerImpl implements MessageQueueEventManager {
     private final OutboxService outboxService;
     private final MessageConverter messageConverter;
     private final ApplicationEventPublisher eventPublisher;
+    private final RabbitConfigData rabbitConfigData;
 
     public MessageQueueEventManagerImpl(ApplicationContext context, OutboxService outboxService,
-                                        MessageConverter messageConverter, ApplicationEventPublisher eventPublisher) {
+                                        MessageConverter messageConverter, ApplicationEventPublisher eventPublisher,
+                                        RabbitConfigData rabbitConfigData) {
         this.context = context;
         this.outboxService = outboxService;
         this.messageConverter = messageConverter;
         this.eventPublisher = eventPublisher;
+        this.rabbitConfigData = rabbitConfigData;
     }
 
     /**
-     * Sends event to spring boot internal
+     * Sends event to spring boot internal. First, message data is written to the outbox table, then an event is
+     * thrown to leave a message in the queue
      * @param mqinputDTO
      */
     @Override
@@ -79,10 +88,14 @@ public class MessageQueueEventManagerImpl implements MessageQueueEventManager {
         eventPublisher.publishEvent(mqEventDTO);
     }
 
+    /**
+     * OutboxDTO required to write to the outbox table is created.
+     * @param mqInputDTO
+     * @return
+     */
     private OutboxDTO generateOutboxDTO(MessageQueueInputDTO<? extends MessageBaseRequest> mqInputDTO) {
         OutboxDTO outboxDTO = new OutboxDTO();
-        //outboxDTO.setUniqueId(UUID.randomUUID().toString());
-        outboxDTO.setUniqueId(mqInputDTO.getRequest().getUniqueTransactionId());
+        outboxDTO.setUniqueId(UUID.randomUUID().toString());
         outboxDTO.setEventCode(mqInputDTO.getEventType().name());
         outboxDTO.setProcessCode(mqInputDTO.getProcessType().name());
         outboxDTO.setStatus(OutboxStatus.CREATED.name());
@@ -91,12 +104,40 @@ public class MessageQueueEventManagerImpl implements MessageQueueEventManager {
         return outboxDTO;
     }
 
+    /**
+     * Returns the header. The header holds the technical components used to send the message, such as exchange name
+     * and routing key.
+     * @param mqInputDTO
+     * @return
+     */
     private Map<String, String> getHeader(MessageQueueInputDTO<? extends MessageBaseRequest> mqInputDTO) {
-        Map<String, String> header = mqInputDTO.getHeader() != null ? mqInputDTO.getHeader() : new HashMap<>();
+        Map<String, String> header = new HashMap<>();
         header.put(MQ_EXCHANGE_NAME, mqInputDTO.getExchangeName());
         header.put(MQ_ROUTING_KEY, mqInputDTO.getRoutingKey());
-        header.put(MQ_AMQP_TEMPLATE_NAME, mqInputDTO.getSenderTemplate());
+        header.put(MQ_AMQP_TEMPLATE_NAME, getAmqpTemplate(mqInputDTO.getRoutingKey()));
         return header;
+    }
+
+    /**
+     * Returns the bean name of template name that will be used to send the message. The connection name to which the
+     * message belongs is found by using the roting key information to which the message was sent. The name rabbit
+     * template bean is found by adding the RabbitTemplate suffix to the end of the connection name as required by business.
+     * @param routingKey
+     * @return
+     */
+    private String getAmqpTemplate(String routingKey) {
+        for (Map.Entry<String, Map<String, QueueSpec>> queueSpec : rabbitConfigData.getQueues().entrySet()) {
+            for (Map.Entry<String, QueueSpec> queueConfig : queueSpec.getValue().entrySet()) {
+                if (routingKey.equals(queueConfig.getValue().getRoutingKey())) {
+                    // RabbitTemplate suffix is added to the end of amqp templates at MessagePublisherConfig class
+                    String amqpTemplate = STR."\{queueSpec.getKey()}RabbitTemplate";
+                    LOG.info("The amqp template name {} was found for the routing key: {}", amqpTemplate, routingKey);
+                    return amqpTemplate;
+                }
+            }
+        }
+        LOG.error("Any amqp template name can not be found for the routing key: {}", routingKey);
+        throw new MessageQueueException("Any amqp template name can not be found for the routing key: " + routingKey);
     }
 
     @EventListener(MessageQueueEventDTO.class)

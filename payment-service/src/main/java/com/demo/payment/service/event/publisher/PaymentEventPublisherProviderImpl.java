@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.demo.payment.service.event.publisher.model.PaymentEvent;
-import com.demo.rabbitmq.outbox.service.enums.EventType;
+import com.demo.rabbitmq.outbox.enums.EventType;
 import org.springframework.stereotype.Component;
 
 @Component

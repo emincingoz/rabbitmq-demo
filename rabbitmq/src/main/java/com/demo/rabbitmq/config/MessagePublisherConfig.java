@@ -1,14 +1,14 @@
-package com.demo.rabbitmq.config.rabbit;
+package com.demo.rabbitmq.config;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import com.demo.rabbitmq.BeanFactory;
-import com.demo.rabbitmq.config.EventUtils;
-import com.demo.rabbitmq.config.rabbit.model.ConnectionSpec;
-import com.demo.rabbitmq.config.rabbit.model.QueueSpec;
-import com.demo.rabbitmq.config.rabbit.model.RabbitConfigData;
+import com.demo.rabbitmq.model.ConnectionSpec;
+import com.demo.rabbitmq.model.QueueSpec;
+import com.demo.rabbitmq.util.BeanFactory;
+import com.demo.rabbitmq.util.EventUtils;
+import com.demo.rabbitmq.model.RabbitConfigData;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import jakarta.annotation.PostConstruct;

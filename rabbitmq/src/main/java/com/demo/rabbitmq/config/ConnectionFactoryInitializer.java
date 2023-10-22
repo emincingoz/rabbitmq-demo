@@ -1,10 +1,10 @@
-package com.demo.rabbitmq.config.rabbit;
+package com.demo.rabbitmq.config;
 
 import java.util.Map;
 
-import com.demo.rabbitmq.BeanFactory;
-import com.demo.rabbitmq.config.rabbit.model.ConnectionSpec;
-import com.demo.rabbitmq.config.rabbit.model.RabbitConfigData;
+import com.demo.rabbitmq.model.ConnectionSpec;
+import com.demo.rabbitmq.util.BeanFactory;
+import com.demo.rabbitmq.model.RabbitConfigData;
 import com.rabbitmq.client.AddressResolver;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;

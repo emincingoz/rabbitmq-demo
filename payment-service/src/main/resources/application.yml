@@ -83,22 +83,23 @@ second-property:
 
 rabbit-config:
   outbox:
+    enabled: true
     table-name: PAYMENT_OUTBOX
 
   connections:
-    orderConnection:
+    order:
       host: localhost
       port: 5674
       username: rabbitdemo
       password: rabbitdemo
-    paymentConnection:
+    payment:
       host: localhost
       port: 5673
       username: rabbitdemo
       password: rabbitdemo
 
   queues:
-    orderConnection:
+    order:
       orderCreated:
         declare: true
         name: q.order-service.order-created-queue
@@ -111,7 +112,7 @@ rabbit-config:
           name: x.order-service
           durable: true
           type: direct
-    paymentConnection:
+    payment:
       paymentCreated:
         declare: true
         name: q.payment-service.payment-created-queue

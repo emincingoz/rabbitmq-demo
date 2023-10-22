@@ -1,4 +1,4 @@
-package com.demo.rabbitmq.config.rabbit.model;
+package com.demo.rabbitmq.model;
 
 import java.util.Map;
 

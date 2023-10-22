@@ -1,4 +1,4 @@
-package com.demo.rabbitmq.outbox.repository;
+package com.demo.rabbitmq.outbox.repository.impl;
 
 import static java.lang.StringTemplate.STR;
 
@@ -12,8 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.demo.rabbitmq.outbox.repository.OutboxRepository;
 import com.demo.rabbitmq.outbox.repository.entity.Outbox;
-import com.demo.rabbitmq.outbox.service.enums.QueryKey;
+import com.demo.rabbitmq.outbox.enums.QueryKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;

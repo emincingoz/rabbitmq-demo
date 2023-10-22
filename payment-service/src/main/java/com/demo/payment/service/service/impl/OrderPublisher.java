@@ -8,7 +8,7 @@ import com.demo.payment.service.entity.Payment;
 import com.demo.payment.service.event.publisher.PaymentEventPublisherProvider;
 import com.demo.payment.service.event.publisher.model.PaymentEvent;
 import com.demo.payment.service.service.PublisherService;
-import com.demo.rabbitmq.outbox.service.enums.EventType;
+import com.demo.rabbitmq.outbox.enums.EventType;
 import org.springframework.stereotype.Service;
 
 @Service

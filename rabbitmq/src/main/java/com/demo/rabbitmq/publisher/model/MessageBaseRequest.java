@@ -1,4 +1,4 @@
-package com.demo.rabbitmq.outbox.service.model;
+package com.demo.rabbitmq.publisher.model;
 
 import lombok.Getter;
 import lombok.Setter;

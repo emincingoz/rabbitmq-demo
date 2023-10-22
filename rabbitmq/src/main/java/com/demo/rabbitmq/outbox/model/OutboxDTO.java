@@ -1,4 +1,4 @@
-package com.demo.rabbitmq.outbox.service.model;
+package com.demo.rabbitmq.outbox.model;
 
 import java.time.LocalDateTime;
 

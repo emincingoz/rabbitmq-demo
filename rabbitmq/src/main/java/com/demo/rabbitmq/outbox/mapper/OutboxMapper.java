@@ -1,7 +1,7 @@
 package com.demo.rabbitmq.outbox.mapper;
 
 import com.demo.rabbitmq.outbox.repository.entity.Outbox;
-import com.demo.rabbitmq.outbox.service.model.OutboxDTO;
+import com.demo.rabbitmq.outbox.model.OutboxDTO;
 
 /**
  * Outbox dto entity mapper

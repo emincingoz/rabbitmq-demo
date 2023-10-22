@@ -4,9 +4,9 @@ import static java.lang.StringTemplate.STR;
 
 import java.util.Map;
 
-import com.demo.rabbitmq.config.rabbit.model.ConnectionSpec;
-import com.demo.rabbitmq.config.rabbit.model.QueueSpec;
-import com.demo.rabbitmq.config.rabbit.model.RabbitConfigData;
+import com.demo.rabbitmq.model.ConnectionSpec;
+import com.demo.rabbitmq.model.QueueSpec;
+import com.demo.rabbitmq.model.RabbitConfigData;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,4 +1,4 @@
-package com.demo.rabbitmq.outbox.service.enums;
+package com.demo.rabbitmq.outbox.enums;
 
 public enum QueryKey {
     GET_BY_ID,

@@ -1,4 +1,4 @@
-package com.demo.rabbitmq;
+package com.demo.rabbitmq.config;
 
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.amqp.support.converter.SerializerMessageConverter;
