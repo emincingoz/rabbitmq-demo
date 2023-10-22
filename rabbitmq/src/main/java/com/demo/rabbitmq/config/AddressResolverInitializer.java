@@ -31,9 +31,12 @@ public class AddressResolverInitializer {
 
             String addressResolverBeanName = e.getKey() + "AddressResolver";
             ConnectionSpec connectionSpec = e.getValue();
-            AddressResolver addressResolver = new DnsRecordIpAddressResolver(connectionSpec.getHost(), connectionSpec.getPort());
-            beanFactory.initializeBean(addressResolver, addressResolverBeanName);
-            LOG.info("AddressResolver bean initialized with bean name: {}", addressResolverBeanName);
+            if (connectionSpec.getDeclare()) {
+                AddressResolver addressResolver = new DnsRecordIpAddressResolver(connectionSpec.getHost(),
+                        connectionSpec.getPort());
+                beanFactory.initializeBean(addressResolver, addressResolverBeanName);
+                LOG.info("AddressResolver bean initialized with bean name: {}", addressResolverBeanName);
+            }
         }
     }
 }

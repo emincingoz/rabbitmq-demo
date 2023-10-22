@@ -1,16 +1,11 @@
 package com.demo.rabbitmq.config;
 
-import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 import com.demo.rabbitmq.model.ConnectionSpec;
 import com.demo.rabbitmq.model.QueueSpec;
 import com.demo.rabbitmq.util.BeanFactory;
-import com.demo.rabbitmq.util.EventUtils;
 import com.demo.rabbitmq.model.RabbitConfigData;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,85 +26,57 @@ public class MessagePublisherConfig {
     private final BeanFactory beanFactory;
     private final MessageConverter messageConverter;
     private final RabbitConfigData rabbitConfigData;
+    private final MessageQueueConfig messageQueueConfig;
 
     public MessagePublisherConfig(ApplicationContext context, BeanFactory beanFactory,
                                   @Qualifier("messageConverter") MessageConverter messageConverter,
-                                  RabbitConfigData rabbitConfigData) {
+                                  RabbitConfigData rabbitConfigData, MessageQueueConfig messageQueueConfig) {
         this.context = context;
         this.beanFactory = beanFactory;
         this.messageConverter = messageConverter;
         this.rabbitConfigData = rabbitConfigData;
+        this.messageQueueConfig = messageQueueConfig;
     }
 
     @PostConstruct
-    public void amqpTemplateGenerator() {
+    public void createAmqpTemplates() {
 
-        for(Map.Entry<String, ConnectionSpec> e : rabbitConfigData.getConnections().entrySet()) {
-
-            Map<String, QueueSpec> queues = rabbitConfigData.getQueues().get(e.getKey());
-
-            if (CollectionUtils.isEmpty(queues)) {
+        for(Map.Entry<String, ConnectionSpec> queueConfig : rabbitConfigData.getConnections().entrySet()) {
+            Map<String, QueueSpec> queues = rabbitConfigData.getQueues().get(queueConfig.getKey());
+            if (!queueConfig.getValue().getDeclare() || CollectionUtils.isEmpty(queues)) {
                 continue;
             }
+            createAmqpTemplate(queueConfig.getKey());
+        }
+    }
 
-            String rabbitTemplateBeanName = e.getKey() + "RabbitTemplate";
+    private void createAmqpTemplate(String connectionName) {
+        ConnectionFactory connectionFactory = getConnectionFactory(connectionName);
+        RabbitTemplate rabbitTemplate = getRabbitTemplate(connectionFactory);
+        if (rabbitTemplate != null) {
+            beanFactory.initializeBean(rabbitTemplate, connectionName + "RabbitTemplate");
+            messageQueueConfig.declareQueues(rabbitTemplate.getConnectionFactory(), connectionName);
+        }
+    }
 
-            ConnectionFactory connectionFactory = (ConnectionFactory) context.getBean(e.getKey() + "ConnectionFactory");
-
+    private RabbitTemplate getRabbitTemplate(ConnectionFactory connectionFactory) {
+        if (connectionFactory != null) {
             RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
             rabbitTemplate.setMessageConverter(messageConverter);
             rabbitTemplate.setChannelTransacted(false);
-
-            beanFactory.initializeBean(rabbitTemplate, rabbitTemplateBeanName);
-            declareQueues(connectionFactory, e.getKey());
+            return rabbitTemplate;
         }
+        return null;
     }
 
-    private void declareQueues(ConnectionFactory connectionFactory, String connectionGroup) {
-        if (CollectionUtils.isEmpty(rabbitConfigData.getQueues()) || CollectionUtils.isEmpty(rabbitConfigData.getQueues().get(connectionGroup))) {
-            return;
-        }
-
-        try (Channel channel = EventUtils.getChannel(connectionFactory)) {
-            rabbitConfigData.getQueues().get(connectionGroup).entrySet().stream().filter(spec -> spec.getValue().isDeclare()).forEach(spec -> declareQueue(channel, spec.getValue()));
-        } catch (IOException | TimeoutException e) {
-            LOG.error("An error occurred while declaring queues.", e);
-        }
-    }
-
-    private void declareQueue(Channel channel, QueueSpec queueSpec) {
-        if (!EventUtils.isValidExchangeType(queueSpec)) {
-            LOG.error("Exchange type is wrong for queue. QueueName: {}, ExchangeName: {}", queueSpec.getName(),
-                    queueSpec.getExchange());
-            return;
-        }
+    private ConnectionFactory getConnectionFactory(String connectionSpecKey) {
+        String connectionFactoryBeanName = connectionSpecKey + "ConnectionFactory";
         try {
-            callQueueDeclare(channel, queueSpec);
-        } catch (Exception e) {
-            LOG.error("An error occurred while declaring queue. QueueName: {}", queueSpec.getName(), e);
+            return (ConnectionFactory) context.getBean(connectionFactoryBeanName);
+        } catch (RuntimeException e) {
+            LOG.error("Could not found any connection factory bean with name {}",
+                    connectionFactoryBeanName);
         }
-    }
-
-    private void callQueueDeclare(Channel channel, QueueSpec queueSpec) throws IOException {
-        try {
-            AMQP.Queue.DeclareOk response = channel.queueDeclarePassive(queueSpec.getName());
-            LOG.info("Queue already declared. QueueName: {}", queueSpec.getName());
-            LOG.info("QueueName: {}. Ready message count: {}, Consumer count {}", queueSpec.getName(),
-                    response.getMessageCount(), response.getConsumerCount());
-        } catch (IOException e) {
-            LOG.error("Queue not declared. QueueName: {}", queueSpec.getName());
-
-            channel.exchangeDeclare(queueSpec.getExchange().getName(), queueSpec.getExchange().getType(),
-                    queueSpec.getExchange().isDurable());
-            LOG.info("Exchange declared. QueueName: {}, ExchangeName: {}", queueSpec.getName(),
-                    queueSpec.getExchange().getName());
-
-            channel.queueDeclare(queueSpec.getName(), queueSpec.isDurable(), false, false, queueSpec.getArguments());
-            LOG.info("Queue declared. QueueName: {}, ExchangeName: {}", queueSpec.getName(),queueSpec.getExchange().getName());
-
-            channel.queueBind(queueSpec.getName(), queueSpec.getExchange().getName(), queueSpec.getRoutingKey());
-            LOG.info("{} queue bound to {} exchange by {} routing key", queueSpec.getName(),
-                    queueSpec.getExchange().getName(), queueSpec.getRoutingKey());
-        }
+        return null;
     }
 }

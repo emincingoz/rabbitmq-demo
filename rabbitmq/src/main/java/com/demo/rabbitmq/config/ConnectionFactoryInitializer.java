@@ -37,18 +37,34 @@ public class ConnectionFactoryInitializer {
             String connectionFactoryBeanName = e.getKey() + "ConnectionFactory";
             ConnectionSpec connectionSpec = e.getValue();
 
-            CachingConnectionFactory connectionFactory = new CachingConnectionFactory(connectionSpec.getHost(),
-                    connectionSpec.getPort());
-            connectionFactory.setUsername(connectionSpec.getUsername());
-            connectionFactory.setPassword(connectionSpec.getPassword());
-            connectionFactory.setCacheMode(CachingConnectionFactory.CacheMode.CONNECTION);
-            connectionFactory.setCloseTimeout(CONNECTION_CLOSE_TIMEOUT);
+            if (connectionSpec.getDeclare()) {
+                CachingConnectionFactory connectionFactory = getConnectionFactory(connectionSpec, e.getKey());
 
-            AddressResolver addressResolver = (AddressResolver) context.getBean(e.getKey() + "AddressResolver");
+                beanFactory.initializeBean(connectionFactory, connectionFactoryBeanName);
+                LOG.info("ConnectionFactory bean initialized with name: {}", connectionFactoryBeanName);
+            }
+        }
+    }
+
+    private CachingConnectionFactory getConnectionFactory(ConnectionSpec connectionSpec, String connectionName) {
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(connectionSpec.getHost(),
+                connectionSpec.getPort());
+        connectionFactory.setUsername(connectionSpec.getUsername());
+        connectionFactory.setPassword(connectionSpec.getPassword());
+        connectionFactory.setCacheMode(CachingConnectionFactory.CacheMode.CONNECTION);
+        connectionFactory.setCloseTimeout(CONNECTION_CLOSE_TIMEOUT);
+
+        getAddressResolver(connectionName, connectionFactory);
+
+        return connectionFactory;
+    }
+
+    private void getAddressResolver(String connectionName, CachingConnectionFactory connectionFactory) {
+        try {
+            AddressResolver addressResolver = (AddressResolver) context.getBean(connectionName + "AddressResolver");
             connectionFactory.setAddressResolver(addressResolver);
-
-            beanFactory.initializeBean(connectionFactory, connectionFactoryBeanName);
-            LOG.info("ConnectionFactory bean initialized with name: {}", connectionFactoryBeanName);
+        } catch (RuntimeException e) {
+            LOG.error("Could not found address resolver bean with name: {}", connectionName + "AddressResolver");
         }
     }
 }

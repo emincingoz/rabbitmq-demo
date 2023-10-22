@@ -88,11 +88,13 @@ rabbit-config:
 
   connections:
     order:
+      declare: true
       host: localhost
       port: 5674
       username: rabbitdemo
       password: rabbitdemo
     payment:
+      declare: true
       host: localhost
       port: 5673
       username: rabbitdemo
