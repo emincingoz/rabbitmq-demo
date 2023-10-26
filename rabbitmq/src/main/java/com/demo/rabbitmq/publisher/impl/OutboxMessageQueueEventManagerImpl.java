@@ -27,6 +27,7 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -37,8 +38,9 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
-public class MessageQueueEventManagerImpl implements MessageQueueEventManager {
-    private static final Logger LOG = LoggerFactory.getLogger(MessageQueueEventManagerImpl.class);
+@ConditionalOnProperty(name = "rabbit-config.outbox.enabled", havingValue = "true")
+public class OutboxMessageQueueEventManagerImpl implements MessageQueueEventManager {
+    private static final Logger LOG = LoggerFactory.getLogger(OutboxMessageQueueEventManagerImpl.class);
     private static final Type MESSAGE_QUEUE_HEADER_MAP_TYPE = new TypeToken<HashMap<String, String>>() {}.getType();
     private static final String MQ_EXCHANGE_NAME = "mq-exchange-name";
     private static final String MQ_ROUTING_KEY = "mq-routing-key";
@@ -49,9 +51,9 @@ public class MessageQueueEventManagerImpl implements MessageQueueEventManager {
     private final ApplicationEventPublisher eventPublisher;
     private final RabbitConfigData rabbitConfigData;
 
-    public MessageQueueEventManagerImpl(ApplicationContext context, OutboxService outboxService,
-                                        MessageConverter messageConverter, ApplicationEventPublisher eventPublisher,
-                                        RabbitConfigData rabbitConfigData) {
+    public OutboxMessageQueueEventManagerImpl(ApplicationContext context, OutboxService outboxService,
+                                              MessageConverter messageConverter, ApplicationEventPublisher eventPublisher,
+                                              RabbitConfigData rabbitConfigData) {
         this.context = context;
         this.outboxService = outboxService;
         this.messageConverter = messageConverter;
@@ -77,6 +79,8 @@ public class MessageQueueEventManagerImpl implements MessageQueueEventManager {
             LOG.error("Request data should have a unique transaction id");
             return;
         }
+
+        LOG.debug("Outbox message queue event manager implementation worked.");
 
         // Save to outbox table
         OutboxDTO outboxDTO = generateOutboxDTO(mqinputDTO);
@@ -171,7 +175,9 @@ public class MessageQueueEventManagerImpl implements MessageQueueEventManager {
 
         Map<String, String> headerMap = Optional.ofNullable(header).orElse(Collections.emptyMap()).entrySet()
                 .stream()
-                .filter(e -> !MQ_EXCHANGE_NAME.equals(e.getKey()) && !MQ_ROUTING_KEY.equals(e.getKey()))
+                .filter(e -> !MQ_EXCHANGE_NAME.equals(e.getKey()) &&
+                        !MQ_ROUTING_KEY.equals(e.getKey()) &&
+                        !MQ_AMQP_TEMPLATE_NAME.equals(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         headerMap.forEach(properties::setHeader);
