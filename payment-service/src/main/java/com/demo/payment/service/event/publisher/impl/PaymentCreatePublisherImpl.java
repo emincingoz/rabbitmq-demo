@@ -36,7 +36,7 @@ public class PaymentCreatePublisherImpl implements PaymentEventPublisher<Payment
         event.setRequest(request);
         event.setExchangeName(exchange);
         event.setRoutingKey(routingKey);
-        eventManager.sendEvent(event);
+        eventManager.send(event);
     }
 
     private static PaymentCreateEvent getPaymentCreateEvent(PaymentEvent<Payment> eventData) {
